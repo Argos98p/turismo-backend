@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio</title>
+</head>
+<body>
+    <h1>Inicio</h1>
+    <p th:text="${saludar} "> </p>
+    <p th:text="${saludo} "> </p>
+    <br>
+    <a th:href = "@{/agregar}"> Crear place </a>
+    <div th:if = "${places != null and !places.empty}">
+        <table>
+            <tr>
+                <th>Latitud </th>
+                <th>Longitud </th>
+                <th>Address </th>
+                <th>Location </th>
+                <th>Link </th>
+                <th>Title </th>
+                <th>Label </th>
+                <th>Fn </th>
+            </tr>
+            <tr th:each="place : ${places}">
+                <td th:text="${place.latitud}">Mostrar Latitud</td>
+                <td th:text="${place.longitud}">Mostrar Longitud</td>
+                <td th:text="${place.address}">Mostrar Addres</td>
+                <td th:text="${place.location}">Mostrar Location</td>
+                <td th:text="${place.link}">Mostrar Link</td>
+                <td th:text="${place.title}">Mostrar Title</td>
+                <td th:text="${place.label}">Mostrar Label</td>
+                <td th:text="${place.fn}">Mostrar Fn</td>
+            </tr>
+        </table>
+    </div>
+    <div th:if = "${places == null or places.empty}"> La lista de personas esta vacia </div>
+</body>
+</html>
