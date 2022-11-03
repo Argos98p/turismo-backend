@@ -1,76 +1,62 @@
 package micro.ucuenca.ec.holaSpring;
 
-import lombok.extern.slf4j.Slf4j;
-import micro.ucuenca.ec.holaSpring.domain.Place;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import micro.ucuenca.ec.holaSpring.domain.Placev2;
+import micro.ucuenca.ec.holaSpring.model.Place;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 
 
-@Controller
-@Slf4j
+@RestController
+@ResponseBody
+@RequestMapping("/api/place")
 public class Controlador {
 
-    @Value("${index.saludo}")
-    private String saludo;
-    private List<Place> places = new ArrayList();
+    private final RestTemplate restTemplate;
 
-    @GetMapping("/inicio")
-    public String inicio(Model model){
-        //var saludar = "Mensaje asdas con thyleaf";
-        /*var place = new Place();
-        place.setLatitud("1.123456");
-        place.setLongitud("78.12456");
-        place.setAddress("direccion 1");
-        place.setLocation("Cuenca");
-        place.setLink("www.link1.com");
-        place.setTitle("lugar 1");
-        place.setLabel("label 1");
-        place.setFn("prueba 1");
-
-        var place2 = new Place();
-        place2.setLatitud("0.123456");
-        place2.setLongitud("80.987456");
-        place2.setAddress("direccion 2");
-        place2.setLocation("Cuenca");
-        place2.setLink("www.link2.com");
-        place2.setTitle("lugar 2");
-        place2.setLabel("label 2");
-        place2.setFn("prueba 2");
-
-        places.add(place);
-        places.add(place2);*/
-
-        //Visualizar en el navegador
-        //model.addAttribute("saludar",saludar);
-        //model.addAttribute("saludo",saludo);
-        //model.addAttribute("persona",persona);
-        model.addAttribute("places",places);
-        log.info("Ejecutando el controlador spring MVC");
-        return "index";
-    }
-    @GetMapping("/agregar")
-    public String agregar(Place place){
-        return "modificar";
+    public Controlador(RestTemplateBuilder restTemplateBuilder) {
+        this.restTemplate = restTemplateBuilder.build();
     }
 
-    @PostMapping("/guardar")
-    public String guardar(Place place){
-        places.add(place);
-        return "redirect:/inicio";
-    }
 
-    @PostMapping("/guardarJson")
-    public String agregarPeticion(@RequestBody Place place){
-        places.add(place);
-        return "redirect:/inicio";
+    //@PostMapping("/add")
+    /*
+    @RequestMapping(path = "/add", method = RequestMethod.POST, consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public String addNewPlace(@RequestPart Place place,@RequestParam("image") MultipartFile file) throws URISyntaxException {
+
+        System.out.println(file);
+
+        String url = "https://sd-e3dfa127.stardog.cloud:5820/Turismo";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth("ricardo.jarro98@ucuenca.edu.ec", "Chocolate619@");
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+
+        System.out.println(UriUtils.encodeQuery("prefix : <http://tour-pedia.org/download/tp.owl> \n" +
+                "SELECT * WHERE { ?f a :Place. }", StandardCharsets.UTF_8));
+
+
+
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("query", "").encode()
+                .toUriString();
+        System.out.println(urlTemplate);
+        System.out.println(place);
+
+        return "ok";
     }
+*/
+
 
 
 }
