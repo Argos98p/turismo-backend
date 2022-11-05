@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 
+import micro.ucuenca.ec.holaSpring.Utils.Slug;
 import micro.ucuenca.ec.holaSpring.property.FileStorageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,10 +43,9 @@ public class FileStorageService {
 
     public String storeFile(MultipartFile file, String idPlace) {
 
-        // Normalize file name
-
+        //
         //Path placePath = Paths.get(String.valueOf(this.fileStorageLocation),idPlace);
-        String placePath = String.valueOf(this.fileStorageLocation).concat("/").concat(idPlace);
+        String placePath = String.valueOf(this.fileStorageLocation).concat("/").concat(new Slug().makeSlug(idPlace));
         try {
             Files.createDirectories(Paths.get(placePath));
             String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
@@ -54,7 +54,8 @@ public class FileStorageService {
             }
             Path targetLocation = Paths.get(placePath,fileName) ;
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            return targetLocation.toString();
+            return targetLocation.toString().replace("/home/argos98/Tesis/web-server-tesis/media/","localhost:8080/");
+
         } catch (IOException ex) {
             throw new RuntimeException("Sorry! File name which contains invalid path sequence " );
         }
