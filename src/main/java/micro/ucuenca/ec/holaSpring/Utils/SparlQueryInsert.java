@@ -18,7 +18,7 @@ public class SparlQueryInsert {
     // Replace
 
     public void setBase(String uri){
-        base = "@base  <"+uri+"> .";
+        base = "BASE  <"+uri+"> \n";
     }
     public void setPrefix(String prefix,String uri){
         String templatePrefix = "PREFIX ${prefix}: <${uri}> ";
@@ -60,14 +60,15 @@ public class SparlQueryInsert {
     }
 
     public String build(){
-        String query = "${baseUri} ${prefixes} \nINSERT { ${triples}\n${geo} } WHERE { }";
+        String query = "${base}${baseUri}${prefixes}\nINSERT{${triples}\n${geo}\n} WHERE { }";
         Map<String, String> queryMap = new HashMap<>();
+        queryMap.put("base", base);
         queryMap.put("baseUri",baseUri);
         queryMap.put("prefixes",prefixes);
         queryMap.put("triples",triples);
         queryMap.put("geo",geo);
-        //queryMap.put("base",base);
         StringSubstitutor sub = new StringSubstitutor(queryMap);
+        System.out.println(sub.replace(query));
         return sub.replace(query);
     }
 
