@@ -2,15 +2,12 @@ package micro.ucuenca.ec.holaSpring.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import micro.ucuenca.ec.holaSpring.model.Place;
+import micro.ucuenca.ec.holaSpring.payload.response.MessageResponse;
 import micro.ucuenca.ec.holaSpring.service.FileStorageService;
 import micro.ucuenca.ec.holaSpring.service.PlaceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -30,58 +27,63 @@ public class PlaceController {
     @Autowired
     private PlaceService placeService;
 
-    private static String getBasicAuthenticationHeader(String username, String password) {
-        String valueToEncode = username + ":" + password;
-        return "Basic " + Base64.getEncoder().encodeToString(valueToEncode.getBytes());
-    }
+
 
     @PostMapping("/add")
-    public Place newPlace(@RequestParam("model") String jsonObject , @RequestParam("files")MultipartFile[] files) throws IOException, InterruptedException {
+    public ResponseEntity<?> newPlace(@RequestParam("model") String jsonObject, @RequestParam("files")MultipartFile[] files) throws IOException, InterruptedException {
 
         Place place;
         place = objectMapper.readValue(jsonObject, Place.class);
-        String namePlace = place.getTitle();
 
+        if(place.getUserId()==null){
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: ID user is not present"));
+        }
+        if(place.getTitle()==null){
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Name of resource is empty"));
+        }
+        if(place.getLongitud()==null || place.getLatitud()==null) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Coordinates of resource are empty"));
+        }
+
+        place.setPlaceId(UUID.randomUUID().toString());
         Arrays.asList(files).stream().forEach(file -> {
-            String fileStorePath = fileStorageService.storeFile(file, namePlace);
+            String fileStorePath = fileStorageService.storeFile(file, place.getPlaceId());
             ServletUriComponentsBuilder.fromCurrentContextPath().path(fileStorePath).toUriString();
             place.addImagePath(fileStorePath);
         });
         String query = placeService.toSparqlInsert(place);
 
-        String url = "https://sd-e3dfa127.stardog.cloud:5820/Turismo";
 
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-        Map<String, String> map = new HashMap<>();
-        map.put("Content-Type", "application/sparql-update");
-        map.put("Authorization", getBasicAuthenticationHeader("ricardo.jarro98@ucuenca.edu.ec", "Chocolate619@"));
+        ResponseEntity<?> response = placeService.saveInTripleStore(place, query);
 
-        headers.setAll(map);
+        if(response.getStatusCodeValue() == 200){
+            return ResponseEntity.ok(new MessageResponse("Place registered successfully!"));
+        }
 
-        Map<String, String> req_payload = new HashMap<>();
-        req_payload.put("name", "piyush");
+        return response;
+        //return ResponseEntity.ok(new MessageResponse("Place registered successfully!"));
 
-        HttpEntity<?> request = new HttpEntity<>(query, headers);
+    }
 
-        ResponseEntity<?> response = new RestTemplate().postForEntity(url, request, String.class);
+    @GetMapping("/get")
+    public ResponseEntity<?> getPlace (@RequestParam("placeId") String placeId){
+        return placeService.getPlaceFromDB(placeId);
+    }
 
-        //ServiceResponse entityResponse = (ServiceResponse) response.getBody();
-        System.out.println(response);
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllPlaces(){
 
+        return placeService.getAllPOIs();
+    }
 
-        /*
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("query", UriUtils.encode(query, StandardCharsets.UTF_8));
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(builder.toUriString()))
-                .header("Authorization", getBasicAuthenticationHeader("ricardo.jarro98@ucuenca.edu.ec", "Chocolate619@"))
-                .POST(HttpRequest.BodyPublishers.noBody())
-                .build();
-        HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(httpResponse);*/
-        return null;
+    @GetMapping("nearPlaces")
+    public ResponseEntity<?> nearPlaces(@RequestParam("placeId") String placeId, @RequestParam("km") String km){
+        return placeService.getNearPOIs(placeId,km);
     }
 }
