@@ -1,6 +1,7 @@
 package micro.ucuenca.ec.holaSpring.service;
 
 import micro.ucuenca.ec.holaSpring.Utils.SparlQueryInsert;
+import micro.ucuenca.ec.holaSpring.model.MemberRequest;
 import micro.ucuenca.ec.holaSpring.model.Organization;
 import micro.ucuenca.ec.holaSpring.model.Place;
 import org.springframework.http.HttpEntity;
@@ -17,8 +18,6 @@ import static micro.ucuenca.ec.holaSpring.service.PlaceService.getBasicAuthentic
 
 @Service
 public class OrganizationService {
-
-
     public String toSparqlInsert(Organization organization){
         SparlQueryInsert insertSparql = new SparlQueryInsert();
         String basePlace="myorg:"+organization.getId();
@@ -27,7 +26,8 @@ public class OrganizationService {
         insertSparql.setPrefix("tp","http://tour-pedia.org/download/tp.owl");
         insertSparql.setPrefix("vcard", "http://www.w3.org/2006/vcard/ns#");
         insertSparql.setPrefix("myorg", "http://turis-ucuenca/org/");
-        insertSparql.setTriple(basePlace, "a", ":Organization");
+        insertSparql.setPrefix("org","http://www.w3.org/TR/vocab-org/");
+        insertSparql.setTriple(basePlace, "a", "org:Organization");
         insertSparql.setTriple(basePlace, "vcard:organization-name", "\""+organization.getName()+"\"");
         insertSparql.setTriple(basePlace, "vcard:locality", "\""+organization.getParroquia()+"\"");
         insertSparql.setTriple(basePlace, "vcard:postal-code", "\""+organization.getPostalCode()+"\"");
@@ -35,7 +35,20 @@ public class OrganizationService {
         return insertSparql.build();
     }
 
-    public ResponseEntity<?> saveInTripleStore(Organization organization, String query){
+
+    public String queryAddMember(MemberRequest request){
+        SparlQueryInsert insertSparql = new SparlQueryInsert();
+        insertSparql.setBaseUri("http://turis-ucuenca/");
+        insertSparql.setBase("http://turis-ucuenca/");
+        insertSparql.setPrefix("myorg","http://turis-ucuenca/org/");
+        insertSparql.setPrefix("org","http://www.w3.org/TR/vocab-org/");
+        insertSparql.setPrefix("myusers","http://turis-ucuenca/user/");
+        insertSparql.setTriple("myusers:"+request.getUserId(),"org:memberOf", "myorg:"+request.getOrganizationId());
+        insertSparql.setTriple("myorg:"+request.getOrganizationId(),"org:hasMember","myusers:"+request.getUserId());
+        return insertSparql.build();
+    }
+
+    public ResponseEntity<?> saveInTripleStore(String query){
         String url = "https://sd-e3dfa127.stardog.cloud:5820/Turismo2";
 
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
