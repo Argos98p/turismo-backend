@@ -1,8 +1,10 @@
 package micro.ucuenca.ec.holaSpring.Utils;
 
 import micro.ucuenca.ec.holaSpring.model.Place;
+import micro.ucuenca.ec.holaSpring.model.Region;
 import org.apache.commons.text.StringSubstitutor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,6 +46,17 @@ public class SparlQueryInsert {
         triples = triples.concat("\n:"+new Slug().makeSlug(geoUri)+"  geo:hasGeometry " +":"+new Slug().makeSlug(geoUri).concat("_geo ."));
 
     }
+
+    public String geoPolygon( Region region){
+       StringBuilder coordenadas = new StringBuilder();
+       String tripleta = "";
+        for (String coord:region.getCoordenadas()) {
+            coordenadas.append(coord).append(", ");
+        }
+        return "[ geo:asWKT \"POLYGON (("+coordenadas+")\"^^geo:wktLiteral ;] .";
+
+    }
+
     public void setTriple(String subject, String predicate, String object){
         String templatePrefix = "${subject} ${predicate} ${object} .";
         Map<String, String>  tripleMap = new HashMap<>();

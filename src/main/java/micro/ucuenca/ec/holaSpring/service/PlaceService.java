@@ -1,8 +1,10 @@
 package micro.ucuenca.ec.holaSpring.service;
 
 import micro.ucuenca.ec.holaSpring.Utils.SparlQueryInsert;
+import micro.ucuenca.ec.holaSpring.database.TriplestoreConnection;
 import micro.ucuenca.ec.holaSpring.model.Place;
 import micro.ucuenca.ec.holaSpring.utils.Utils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import static micro.ucuenca.ec.holaSpring.Utils.SparqlTemplates.*;
 
 @Service
 public class PlaceService {
+
+    TriplestoreConnection triplestoreConnection;
 
     static String getBasicAuthenticationHeader(String username, String password) {
         String valueToEncode = username + ":" + password;
@@ -77,97 +81,28 @@ public class PlaceService {
 
     public ResponseEntity<?> saveInTripleStore(Place place, String query){
 
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-        Map<String, String> map = new HashMap<>();
-        map.put("Content-Type", "application/sparql-update");
-        map.put("Authorization", getBasicAuthenticationHeader("ricardo.jarro98@ucuenca.edu.ec", "Chocolate619@"));
+        return triplestoreConnection.PostToTriplestore(query);
 
-        headers.setAll(map);
-
-        HttpEntity<?> request = new HttpEntity<>(query, headers);
-
-        ResponseEntity<?> response = new RestTemplate().postForEntity(url+"/update", request, String.class);
-        System.out.println(response);
-
-        return response;
     }
 
 
     public ResponseEntity<?> getPlaceFromDB(String placeId){
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-        Map<String, String> map = new HashMap<>();
-        map.put("Content-Type", "application/sparql-query");
-        //map.put("Accept","application/sparql-results+json");
-        map.put("Authorization", getBasicAuthenticationHeader("ricardo.jarro98@ucuenca.edu.ec", "Chocolate619@"));
-        headers.setAll(map);
 
         String queryPlace=getPlaceQuery(placeId);
-        System.out.println(queryPlace);
 
-        HttpEntity<?> request = new HttpEntity<>(queryPlace, headers);
-        ResponseEntity<?> response = new RestTemplate().postForEntity(url+"/query", request, String.class);
-        if(response.getStatusCodeValue() == 200){
+        return triplestoreConnection.QueryTriplestore(queryPlace);
 
-            String jsonData = Utils.convertXMLtoJSON(Objects.requireNonNull(response.getBody()).toString());
-            if(!jsonData.equalsIgnoreCase("error")){
-               return ResponseEntity.ok(jsonData);
-            }else{
-                return (ResponseEntity<?>) ResponseEntity.internalServerError();
-            }
-            //System.out.println(Objects.requireNonNull(response.getBody()).toString());
-
-        }
-        return response;
     }
 
     public ResponseEntity<?> getAllPOIs(){
-
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-        Map<String, String> map = new HashMap<>();
-        map.put("Content-Type", "application/sparql-query");
-        //map.put("Accept","application/sparql-results+json");
-        map.put("Authorization", getBasicAuthenticationHeader("ricardo.jarro98@ucuenca.edu.ec", "Chocolate619@"));
-        headers.setAll(map);
-
         String query = getAllPOIsQuery();
-        HttpEntity<?> request = new HttpEntity<>(query, headers);
-        ResponseEntity<?> response = new RestTemplate().postForEntity(url+"/query", request, String.class);
-        if(response.getStatusCodeValue() == 200){
-
-            String jsonData = Utils.convertXMLtoJSON(Objects.requireNonNull(response.getBody()).toString());
-            if(!jsonData.equalsIgnoreCase("error")){
-                return ResponseEntity.ok(jsonData);
-            }else{
-                return (ResponseEntity<?>) ResponseEntity.internalServerError();
-            }
-            //System.out.println(Objects.requireNonNull(response.getBody()).toString());
-
-        }
-        return response;
+        return triplestoreConnection.QueryTriplestore(query);
     }
 
     public ResponseEntity<?> getNearPOIs(String idPlace, String km){
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-        Map<String, String> map = new HashMap<>();
-        map.put("Content-Type", "application/sparql-query");
-        //map.put("Accept","application/sparql-results+json");
-        map.put("Authorization", getBasicAuthenticationHeader("ricardo.jarro98@ucuenca.edu.ec", "Chocolate619@"));
-        headers.setAll(map);
-
         String query = getNearPOIsQuery(idPlace,km);
-        HttpEntity<?> request = new HttpEntity<>(query, headers);
-        ResponseEntity<?> response = new RestTemplate().postForEntity(url+"/query", request, String.class);
-        if(response.getStatusCodeValue() == 200){
-
-            String jsonData = Utils.convertXMLtoJSON(Objects.requireNonNull(response.getBody()).toString());
-            if(!jsonData.equalsIgnoreCase("error")){
-                return ResponseEntity.ok(jsonData);
-            }else{
-                return (ResponseEntity<?>) ResponseEntity.internalServerError();
-            }
-            //System.out.println(Objects.requireNonNull(response.getBody()).toString());
-
-        }
-        return response;
+        return triplestoreConnection.QueryTriplestore(query);
     }
+
+
 }
