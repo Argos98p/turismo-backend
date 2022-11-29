@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import micro.ucuenca.ec.holaSpring.model.MemberRequest;
 import micro.ucuenca.ec.holaSpring.model.Organization;
+import micro.ucuenca.ec.holaSpring.model.OrganizationRegionRequest;
 import micro.ucuenca.ec.holaSpring.model.Place;
 import micro.ucuenca.ec.holaSpring.payload.response.MessageResponse;
 import micro.ucuenca.ec.holaSpring.service.OrganizationService;
@@ -60,19 +61,29 @@ public class OrganizationController {
 
 
     @PostMapping("/member/add")
-
     public ResponseEntity<?> agregarMiembro(@RequestBody MemberRequest memberRequest){
-
         String query = organizationService.queryAddMember(memberRequest);
-
         ResponseEntity<?> response = organizationService.saveInTripleStore( query);
-
         if(response.getStatusCodeValue()==200){
             return ResponseEntity.ok(new MessageResponse("Add member successfully!"));
         }else{
             return response;
         }
-
-
     }
+
+    @PostMapping("/region/add")
+    public ResponseEntity<?> vincularConRegion(@RequestBody OrganizationRegionRequest organizationRegionRequest){
+
+        String query = organizationService.queryVincularRegion(organizationRegionRequest);
+        ResponseEntity<?> response = organizationService.saveInTripleStore( query);
+        if(response.getStatusCodeValue()==200){
+            return ResponseEntity.ok(new MessageResponse("Add member successfully!"));
+        }else{
+            return response;
+        }
+    }
+
+
+
+
 }

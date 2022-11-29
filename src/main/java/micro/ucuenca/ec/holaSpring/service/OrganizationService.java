@@ -4,6 +4,7 @@ import micro.ucuenca.ec.holaSpring.Utils.SparlQueryInsert;
 import micro.ucuenca.ec.holaSpring.database.TriplestoreConnection;
 import micro.ucuenca.ec.holaSpring.model.MemberRequest;
 import micro.ucuenca.ec.holaSpring.model.Organization;
+import micro.ucuenca.ec.holaSpring.model.OrganizationRegionRequest;
 import micro.ucuenca.ec.holaSpring.model.Place;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import static micro.ucuenca.ec.holaSpring.service.PlaceService.getBasicAuthentic
 
 @Service
 public class OrganizationService {
+
     TriplestoreConnection triplestoreConnection;
     public String toSparqlInsert(Organization organization){
         SparlQueryInsert insertSparql = new SparlQueryInsert();
@@ -55,4 +57,14 @@ public class OrganizationService {
     }
 
 
+    public String queryVincularRegion(OrganizationRegionRequest organizationRegionRequest) {
+        SparlQueryInsert insertSparql = new SparlQueryInsert();
+        insertSparql.setBaseUri("http://turis-ucuenca/");
+        insertSparql.setBase("http://turis-ucuenca/");
+        insertSparql.setPrefix("myorg","http://turis-ucuenca/org/");
+        insertSparql.setPrefix("myregiones","http://turis-ucuenca/regiones/");
+        insertSparql.setTriple("myregiones: "+organizationRegionRequest.getRegionId(),":isAdminBy","myorg:"+organizationRegionRequest.getOrganizationId());
+        insertSparql.setTriple("myorg:"+organizationRegionRequest.getOrganizationId(),":admin","myregiones:"+organizationRegionRequest.getRegionId());
+        return insertSparql.build();
+    }
 }
