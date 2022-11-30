@@ -1,22 +1,22 @@
 package micro.ucuenca.ec.holaSpring.model;
 
 public class OrganizationRegionRequest {
-    private String OrganizationId;
-    private String RegionId;
+    private String organizationId;
+    private String regionId;
 
     public String getOrganizationId() {
-        return OrganizationId;
+        return organizationId;
     }
 
     public void setOrganizationId(String organizationId) {
-        OrganizationId = organizationId;
+        this.organizationId = organizationId;
     }
 
     public String getRegionId() {
-        return RegionId;
+        return regionId;
     }
 
     public void setRegionId(String regionId) {
-        RegionId = regionId;
+        this.regionId = regionId;
     }
 }

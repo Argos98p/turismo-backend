@@ -33,8 +33,8 @@ public class OrganizationService {
         insertSparql.setPrefix("org","http://www.w3.org/TR/vocab-org/");
         insertSparql.setTriple(basePlace, "a", "org:Organization");
         insertSparql.setTriple(basePlace, "vcard:organization-name", "\""+organization.getName()+"\"");
-        insertSparql.setTriple(basePlace, "vcard:locality", "\""+organization.getParroquia()+"\"");
-        insertSparql.setTriple(basePlace, "vcard:postal-code", "\""+organization.getPostalCode()+"\"");
+        //insertSparql.setTriple(basePlace, "vcard:locality", "\""+organization.getParroquia()+"\"");
+        //insertSparql.setTriple(basePlace, "vcard:postal-code", "\""+organization.getPostalCode()+"\"");
         //insertSparql.setTriple(basePlace, "vcard:hasLogo", "\""+organization.getLogoUrl()+"\"");
         return insertSparql.build();
     }
@@ -53,6 +53,7 @@ public class OrganizationService {
     }
 
     public ResponseEntity<?> saveInTripleStore(String data){
+        triplestoreConnection = new TriplestoreConnection();
         return triplestoreConnection.PostToTriplestore(data);
     }
 
@@ -63,7 +64,7 @@ public class OrganizationService {
         insertSparql.setBase("http://turis-ucuenca/");
         insertSparql.setPrefix("myorg","http://turis-ucuenca/org/");
         insertSparql.setPrefix("myregiones","http://turis-ucuenca/regiones/");
-        insertSparql.setTriple("myregiones: "+organizationRegionRequest.getRegionId(),":isAdminBy","myorg:"+organizationRegionRequest.getOrganizationId());
+        insertSparql.setTriple("myregiones:"+organizationRegionRequest.getRegionId(),":isAdminBy","myorg:"+organizationRegionRequest.getOrganizationId());
         insertSparql.setTriple("myorg:"+organizationRegionRequest.getOrganizationId(),":admin","myregiones:"+organizationRegionRequest.getRegionId());
         return insertSparql.build();
     }

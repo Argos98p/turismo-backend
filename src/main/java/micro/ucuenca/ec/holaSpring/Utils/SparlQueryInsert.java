@@ -48,12 +48,13 @@ public class SparlQueryInsert {
     }
 
     public String geoPolygon( Region region){
-       StringBuilder coordenadas = new StringBuilder();
+       //StringBuilder coordenadas = new StringBuilder();
        String tripleta = "";
+       /*
         for (String coord:region.getCoordenadas()) {
             coordenadas.append(coord).append(", ");
-        }
-        return "[ geo:asWKT \"POLYGON (("+coordenadas+")\"^^geo:wktLiteral ;] .";
+        }*/
+        return "[ geo:asWKT \"POLYGON (("+region.getCoordenadas()+")\"^^geo:wktLiteral ;] ";
 
     }
 

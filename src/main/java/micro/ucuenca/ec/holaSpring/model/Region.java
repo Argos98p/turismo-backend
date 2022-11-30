@@ -5,7 +5,15 @@ import java.util.ArrayList;
 public class Region {
     String id;
     String nombre;
-    ArrayList<String> coordenadas;
+    String coordenadas;
+
+    public String getCoordenadas() {
+        return coordenadas;
+    }
+
+    public void setCoordenadas(String coordenadas) {
+        this.coordenadas = coordenadas;
+    }
 
     public String getId() {
         return id;
@@ -23,11 +31,12 @@ public class Region {
         this.nombre = nombre;
     }
 
+    /*
     public ArrayList<String> getCoordenadas() {
         return coordenadas;
     }
 
     public void setCoordenadas(ArrayList<String> coordenadas) {
         this.coordenadas = coordenadas;
-    }
+    }*/
 }

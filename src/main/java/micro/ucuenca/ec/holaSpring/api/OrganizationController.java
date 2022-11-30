@@ -36,7 +36,7 @@ public class OrganizationController {
         try {
             organization = objectMapper.readValue(jsonObject, Organization.class);
 
-            if(organization.getName()==null || organization.getParroquia()==null){
+            if(organization.getName()==null ){
                 return ResponseEntity
                         .badRequest()
                         .body(new MessageResponse("Error: falta informacion"));
@@ -75,9 +75,10 @@ public class OrganizationController {
     public ResponseEntity<?> vincularConRegion(@RequestBody OrganizationRegionRequest organizationRegionRequest){
 
         String query = organizationService.queryVincularRegion(organizationRegionRequest);
+        System.out.println(query);
         ResponseEntity<?> response = organizationService.saveInTripleStore( query);
         if(response.getStatusCodeValue()==200){
-            return ResponseEntity.ok(new MessageResponse("Add member successfully!"));
+            return ResponseEntity.ok(new MessageResponse("Add region admin successfully!"));
         }else{
             return response;
         }

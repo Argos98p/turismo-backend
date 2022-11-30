@@ -81,6 +81,7 @@ public class PlaceService {
 
     public ResponseEntity<?> saveInTripleStore(Place place, String query){
 
+        triplestoreConnection = new TriplestoreConnection();
         return triplestoreConnection.PostToTriplestore(query);
 
     }
@@ -89,18 +90,20 @@ public class PlaceService {
     public ResponseEntity<?> getPlaceFromDB(String placeId){
 
         String queryPlace=getPlaceQuery(placeId);
-
+        triplestoreConnection = new TriplestoreConnection();
         return triplestoreConnection.QueryTriplestore(queryPlace);
 
     }
 
     public ResponseEntity<?> getAllPOIs(){
         String query = getAllPOIsQuery();
+        triplestoreConnection= new TriplestoreConnection();
         return triplestoreConnection.QueryTriplestore(query);
     }
 
     public ResponseEntity<?> getNearPOIs(String idPlace, String km){
         String query = getNearPOIsQuery(idPlace,km);
+        triplestoreConnection = new TriplestoreConnection();
         return triplestoreConnection.QueryTriplestore(query);
     }
 

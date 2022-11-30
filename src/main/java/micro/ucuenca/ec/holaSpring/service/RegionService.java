@@ -13,18 +13,21 @@ public class RegionService {
     public String InsertQueryRegion(Region region){
         SparlQueryInsert insertSparql = new SparlQueryInsert();
 
-        String basePlace=":"+region.getId();
+        String basePlace="myregion:"+region.getId();
         insertSparql.setBaseUri("http://turis-ucuenca/");
         insertSparql.setBase("http://turis-ucuenca/");
         insertSparql.setPrefix("rdf","http://www.w3.org/1999/02/22-rdf-syntax-ns#");
         insertSparql.setPrefix("geo", "http://www.opengis.net/ont/geosparql#");
-        insertSparql.setTriple(basePlace, "a", ":Region");
+        insertSparql.setPrefix("dbo","http://dbpedia.org/ontology/");
+        insertSparql.setPrefix("myregion","http://turis-ucuenca/regiones");
+        insertSparql.setTriple(basePlace, "a", "dbo:Region");
         insertSparql.setTriple(basePlace,"geo:hasGeometry", insertSparql.geoPolygon(region));
         return insertSparql.build();
     }
 
     public ResponseEntity<?> saveInTripleStore(String data){
 
+        triplestoreConnection = new TriplestoreConnection();
         return triplestoreConnection.PostToTriplestore(data);
     }
 

@@ -24,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 @Service
-
 public class FileStorageService {
 
     private final Path fileStorageLocation;
@@ -54,7 +53,7 @@ public class FileStorageService {
             }
             Path targetLocation = Paths.get(placePath,fileName) ;
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            return targetLocation.toString().replace("/home/argos98/Tesis/web-server-tesis/media/","localhost:9090/");
+            return targetLocation.toString().replace("/home/argos98/Tes/web-server-tesis/media/","localhost:9090/");
 
         } catch (IOException ex) {
             throw new RuntimeException("Sorry! File name which contains invalid path sequence " );
