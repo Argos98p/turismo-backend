@@ -2,27 +2,27 @@ package micro.ucuenca.ec.holaSpring.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import micro.ucuenca.ec.holaSpring.fb.FbConnection;
 import micro.ucuenca.ec.holaSpring.model.Place;
 import micro.ucuenca.ec.holaSpring.payload.response.MessageResponse;
 import micro.ucuenca.ec.holaSpring.service.FileStorageService;
 import micro.ucuenca.ec.holaSpring.service.PlaceService;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.MultipartBodyBuilder;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
+
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 @RequestMapping("/api/place")
@@ -38,9 +38,18 @@ public class PlaceController {
     private PlaceService placeService;
 
 
-
-    @PostMapping("/add")
+    private File convertMultiPartToFile(MultipartFile file ) throws IOException {
+        System.out.println(file.getName());
+        File convFile = new File( file.getOriginalFilename() );
+        FileOutputStream fos = new FileOutputStream( convFile );
+        fos.write( file.getBytes() );
+        fos.close();
+        return convFile;
+    }
+    //@PostMapping("/add" )
+    @RequestMapping(path = "/add", method = POST, consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<?> newPlace(@RequestParam("model") String jsonObject, @RequestParam("files")MultipartFile[] files)  {
+
 
         Place place;
         try {
@@ -64,32 +73,14 @@ public class PlaceController {
                     .badRequest()
                     .body(new MessageResponse("Error: Coordinates of resource are empty"));
         }
-
         place.setPlaceId(UUID.randomUUID().toString());
+        ArrayList<String> imagesPaths= new ArrayList<>();
+        for(int i = 0;i<files.length;i++){
+            imagesPaths.add(fileStorageService.storeFile(files[i],"" ));
+        }
 
-        Arrays.asList(files).stream().forEach(file -> {
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            // ContentType
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            headers.set("Authorization","Bearer EAAmqhoYHuBsBAIEgFsPJlG6KgheM9PwieLe2HgqOdQZAlSGZBQwgf3qJVhIwaoNtChbyx8TAL0mqpFNZCJq1bj1cImkKlom8r0dTrTGlvsJFBEJEptmUieQowBxLRKOe16Yj8vRlnbIIwfRonZAYjzZBGGczNoIWF3jLGv46kuBR21t4spw94");
-            MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
-            // Load a file from disk.
-            Resource file1 = new FileSystemResource((File) file);
-            multipartBodyBuilder.part("avatar", file1, MediaType.IMAGE_JPEG);
-            // multipart/form-data request body
-            MultiValueMap<String, HttpEntity<?>> multipartBody = multipartBodyBuilder.build();
-            // The complete http request body.
-            HttpEntity<MultiValueMap<String, HttpEntity<?>>> httpEntity = new HttpEntity<>(multipartBody, headers);
-            ResponseEntity<String> responseEntity = restTemplate.postForEntity("https://graph.facebook.com/v15.0/165980483492633/photos", httpEntity,
-                    String.class);
-            System.out.println(responseEntity.getStatusCodeValue());
-            /*
-            String fileStorePath = fileStorageService.storeFile(file, place.getPlaceId());
-            ServletUriComponentsBuilder.fromCurrentContextPath().path(fileStorePath).toUriString();
-            place.addImagePath(fileStorePath);*/
-        });
-        /*
+        ArrayList<String> imagesOfResource = FbConnection.ToFacebook(imagesPaths);
+        place.setImagesPaths(imagesOfResource);
 
         String query = placeService.toSparqlInsert(place);
 
@@ -97,17 +88,63 @@ public class PlaceController {
         ResponseEntity<?> response = placeService.saveInTripleStore(place, query);
 
         if(response.getStatusCodeValue() == 200){
-            return ResponseEntity.ok(new MessageResponse("Place registered successfully!"));
+            return ResponseEntity.ok().body(place);
         }
 
-        return response;*/
         return ResponseEntity.ok(new MessageResponse("Place registered successfully!"));
 
     }
 
     @GetMapping("/get")
     public ResponseEntity<?> getPlace (@RequestParam("placeId") String placeId){
-        return placeService.getPlaceFromDB(placeId);
+
+        String resultadoJson = (String) placeService.getPlaceFromDB(placeId).getBody();
+        Place place = new Place();
+        place.setPlaceId(placeId);
+
+        JSONParser parser = new JSONParser();
+        JSONObject result = null;
+
+        try {
+            result = (JSONObject) parser.parse(resultadoJson);
+            JSONObject sparqlObject= (JSONObject) result.get("sparql");
+            JSONObject results= (JSONObject) sparqlObject.get("results");
+            JSONObject otherResult = (JSONObject) results.get("result");
+            JSONArray resultadosArray = (JSONArray) otherResult.get("binding");
+
+            for(int i = 0;i<resultadosArray.size();i++){
+
+                JSONObject myObject = (JSONObject) resultadosArray.get(i);
+
+                String name = (String) myObject.get("name");
+
+                if(name.equalsIgnoreCase("creadoPor")){
+                    place.setUserId((String) myObject.get("literal"));
+                }else if (name.equalsIgnoreCase("descripcion")){
+                    place.setDescripcion((String) myObject.get("literal"));
+                } else if (name.equalsIgnoreCase("imagenes")) {
+                    String imagenes= (String) myObject.get("literal");
+                    ArrayList<String> srcImages =  new ArrayList<String>(Arrays.asList(imagenes.split(",")));
+                    place.setImagesPaths(srcImages);
+                } else if (name.equalsIgnoreCase("titulo")) {
+                    place.setTitle((String) myObject.get("literal"));
+                }else if(name.equalsIgnoreCase("lat")){
+                    JSONObject numberObject = (JSONObject) myObject.get("literal");
+                    place.setLatitud((String) numberObject.get("content").toString());
+                }else if( name.equalsIgnoreCase("long")){
+                    JSONObject numberObject = (JSONObject) myObject.get("literal");
+                    place.setLongitud((String) numberObject.get("content").toString());
+                }
+            }
+
+
+            return ResponseEntity.ok().body(place);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+
+
     }
 
     @GetMapping("/all")

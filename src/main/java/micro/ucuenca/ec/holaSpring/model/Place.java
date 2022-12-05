@@ -9,24 +9,8 @@ import java.util.ArrayList;
 public class Place {
     //private PlaceGeo placeGeo;
     private String placeId;
+    private String descripcion;
     private String userId;
-
-    public String getPlaceId() {
-        return placeId;
-    }
-
-    public void setPlaceId(String placeId) {
-        this.placeId = placeId;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
     private String latitud;
     private String longitud;
     private String address;
@@ -59,6 +43,14 @@ public class Place {
 
     public void setLatitud(String latitud) {
         this.latitud = latitud;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public String getLongitud() {
@@ -117,7 +109,21 @@ public class Place {
         this.fn = fn;
     }
 
+    public String getPlaceId() {
+        return placeId;
+    }
 
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
     @Override
     public String toString() {

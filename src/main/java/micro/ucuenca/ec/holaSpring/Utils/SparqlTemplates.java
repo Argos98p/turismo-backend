@@ -3,26 +3,36 @@ package micro.ucuenca.ec.holaSpring.Utils;
 public class SparqlTemplates {
 
     public static String getPlaceQuery(String placeId){
+        String place=":";
 
         return """
                 prefix : <http://turis-ucuenca/>\s
                 prefix tp: <http://tour-pedia.org/download/tp.owl>
-                prefix geo: <http://www.opengis.net/ont/geosparql#>\s
+                prefix dc: <http://purl.org/dc/elements/1.1/>
+                prefix  vcard: <http://www.w3.org/2006/vcard/ns#>
+                prefix geo: <http://www.opengis.net/ont/geosparql#>
+                prefix wgs: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+                prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\s
+                                
                 base  <http://turis-ucuenca/>\s
-                  SELECT  ?property ?value WHERE{
-                      {
-                            :""" +placeId+"""
-                            ?property ?value .
-                    }
-                    UNION
-                    \s
-                    {
-                             :""" +placeId+"""
-                              geo:hasGeometry ?geom .
-                            ?geom ?property ?value .
-                        
-                  }
-                }""";
+                                
+                SELECT   ?titulo ?creadoPor ?descripcion  ?lat ?long (GROUP_CONCAT(?elem ; SEPARATOR = ",") AS ?imagenes) WHERE
+                 {
+                    """ +place.concat(placeId).concat(" ")+"""  
+                    :createdBy ?creadoPor ;
+                    dc:title ?titulo ;
+                    dc:description ?descripcion;
+                    vcard:hasPhoto ?imagenes;
+                    geo:hasGeometry ?geom.
+                    ?geom wgs:lat ?lat;
+                     wgs:long ?long.
+                    ?imagenes rdf:rest*/rdf:first ?elem .
+                    #BIND (GROUP_CONCAT(?imagenes ; SEPARATOR = ",") AS ?values)
+                    #BIND (CONCAT(STR(?elem),",") AS ?image) .
+                    #BIND(CONCAT(STR( ?image ), ?image)  AS ?arrayImagenes ) .
+                   \s
+                } GROUP BY ?titulo ?creadoPor ?descripcion ?lat ?long
+                """;
     }
 
     public static String getAllPOIsQuery(){

@@ -12,4 +12,10 @@ public class HolaSpringApplication {
 		SpringApplication.run(HolaSpringApplication.class, args);
 	}
 
+	@Bean
+
+	public ObjectMapper getObjectMapper() {
+		return new ObjectMapper();
+	}
+
 }

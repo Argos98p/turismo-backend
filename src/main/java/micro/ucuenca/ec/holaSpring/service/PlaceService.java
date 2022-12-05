@@ -4,6 +4,7 @@ import micro.ucuenca.ec.holaSpring.Utils.SparlQueryInsert;
 import micro.ucuenca.ec.holaSpring.database.TriplestoreConnection;
 import micro.ucuenca.ec.holaSpring.model.Place;
 import micro.ucuenca.ec.holaSpring.utils.Utils;
+import org.apache.jena.base.Sys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
@@ -66,14 +67,29 @@ public class PlaceService {
         //insertSparql.setTriple(basePlace,":createdBy",place.getUserId());
         //insertSparql.setTriple(basePlace,":hasId", uniqueID);
         insertSparql.setTriple(basePlace,":createdBy","\""+place.getUserId()+"\"");
+        insertSparql.setTriple(basePlace,"dc:description","\""+place.getDescripcion()+"\"");
         insertSparql.setTriple(basePlace,"rdf:type","owl:NamedIndividual");
         insertSparql.setTriple(basePlace,"rdf:type"," tp:POI");
         insertSparql.setTriple(basePlace,"dc:title", "\""+place.getTitle()+"\"");
         insertSparql.setTriple(basePlace,"rdf:label","\""+place.getTitle()+"\"");
         insertSparql.setTriple(basePlace,"vcard:fn","\""+place.getTitle()+"\"");
+        String photos = "(";
+        /*
+        for(int i = 0 ;i<=place.getImagesPaths().size();i++){
+            if (i==place.getImagesPaths().size()-1){
+                photos= photos.concat("\""+place.getImagesPaths().get(i)+"\"");
+            }else{
+                photos= photos.concat("\""+place.getImagesPaths().get(i)+"\", ");
+            }
+
+        }*/
         for (String imagePath: place.getImagesPaths()) {
-            insertSparql.setTriple(basePlace, "vcard:hasPhoto", "\""+imagePath+"\"");
+
+            photos= photos.concat("\""+imagePath+"\" ");
+            //insertSparql.setTriple(basePlace, "vcard:hasPhoto", "\""+imagePath+"\"");
         }
+        photos=photos.concat(")");
+        insertSparql.setTriple(basePlace, "vcard:hasPhoto", photos);
         insertSparql.setGeo(basePlace,place.getLatitud(),place.getLongitud());
         return insertSparql.build();
     }
@@ -90,6 +106,7 @@ public class PlaceService {
     public ResponseEntity<?> getPlaceFromDB(String placeId){
 
         String queryPlace=getPlaceQuery(placeId);
+        System.out.println(queryPlace);
         triplestoreConnection = new TriplestoreConnection();
         return triplestoreConnection.QueryTriplestore(queryPlace);
 
