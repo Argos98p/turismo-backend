@@ -7,6 +7,7 @@ import micro.ucuenca.ec.holaSpring.model.Place;
 import micro.ucuenca.ec.holaSpring.payload.response.MessageResponse;
 import micro.ucuenca.ec.holaSpring.service.FileStorageService;
 import micro.ucuenca.ec.holaSpring.service.PlaceService;
+import org.apache.jena.base.Sys;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -150,11 +151,118 @@ public class PlaceController {
     @GetMapping("/all")
     public ResponseEntity<?> getAllPlaces(){
 
-        return placeService.getAllPOIs();
+        String resultadoString = (String) placeService.getAllPOIs().getBody();
+        JSONParser parser = new JSONParser();
+        JSONObject result = null;
+        ArrayList<Place> places=new ArrayList<>();
+
+        try {
+            result = (JSONObject) parser.parse(resultadoString);
+            JSONObject sparqlObject= (JSONObject) result.get("sparql");
+            JSONObject results= (JSONObject) sparqlObject.get("results");
+            JSONArray otherResult = (JSONArray) results.get("result");
+            for (int j = 0;j<otherResult.size();j++){
+               JSONObject aux= (JSONObject) otherResult.get(j);
+               JSONArray resultadosArray = (JSONArray) aux.get("binding");
+                Place place = new Place();
+                for(int i = 0;i<resultadosArray.size();i++){
+                    JSONObject myObject = (JSONObject) resultadosArray.get(i);
+                    String name = (String) myObject.get("name");
+                    if(name.equalsIgnoreCase("creadoPor")){
+                        place.setUserId((String) myObject.get("literal"));
+                    }else if(name.equalsIgnoreCase("url")){
+                        String uri=(String) myObject.get("uri");
+                        place.setPlaceId(uri.replace("http://turis-ucuenca/",""));
+                    }
+                    else if (name.equalsIgnoreCase("descripcion")){
+                        place.setDescripcion((String) myObject.get("literal"));
+                    } else if (name.equalsIgnoreCase("images")) {
+                        String imagenes= (String) myObject.get("literal");
+                        ArrayList<String> srcImages =  new ArrayList<String>(Arrays.asList(imagenes.split(",")));
+                        place.setImagesPaths(srcImages);
+                    } else if (name.equalsIgnoreCase("titulo")) {
+                        place.setTitle((String) myObject.get("literal"));
+                    }else if(name.equalsIgnoreCase("lat")){
+                        JSONObject numberObject = (JSONObject) myObject.get("literal");
+                        place.setLatitud((String) numberObject.get("content").toString());
+                    }else if( name.equalsIgnoreCase("long")){
+                        JSONObject numberObject = (JSONObject) myObject.get("literal");
+                        place.setLongitud((String) numberObject.get("content").toString());
+                    }
+                }
+                places.add(place);
+            }
+            return ResponseEntity.ok().body(places);
+
+
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @GetMapping("nearPlaces")
     public ResponseEntity<?> nearPlaces(@RequestParam("placeId") String placeId, @RequestParam("km") String km){
-        return placeService.getNearPOIs(placeId,km);
+
+
+        String resultadoString = (String) placeService.getNearPOIs(placeId,km).getBody();
+        JSONParser parser = new JSONParser();
+        JSONObject result = null;
+        ArrayList<Place> places=new ArrayList<>();
+
+        try {
+            result = (JSONObject) parser.parse(resultadoString);
+            JSONObject sparqlObject= (JSONObject) result.get("sparql");
+            JSONObject results= (JSONObject) sparqlObject.get("results");
+            System.out.println(results);
+            if(results ==null){
+                return (ResponseEntity<?>) ResponseEntity.notFound();
+            }
+
+            JSONArray otherResult = (JSONArray) results.get("result");
+
+
+
+            for (int j = 0;j<otherResult.size();j++){
+                JSONObject aux= (JSONObject) otherResult.get(j);
+                JSONArray resultadosArray = (JSONArray) aux.get("binding");
+                Place place = new Place();
+                for(int i = 0;i<resultadosArray.size();i++){
+                    JSONObject myObject = (JSONObject) resultadosArray.get(i);
+                    String name = (String) myObject.get("name");
+                    if(name.equalsIgnoreCase("creadoPor")){
+                        place.setUserId((String) myObject.get("literal"));
+                    }else if(name.equalsIgnoreCase("url")){
+                        String uri=(String) myObject.get("uri");
+                        place.setPlaceId(uri.replace("http://turis-ucuenca/",""));
+                    } else if (name.equalsIgnoreCase("distance")) {
+                        //Double distance = (Double) myObject.get()
+                       /* JSONObject literal= (JSONObject) myObject.get("literal");
+                        double distance = (double) literal.get("content");
+                        place.setDistance(distance);*/
+
+                    } else if (name.equalsIgnoreCase("images")) {
+                        String imagenes= (String) myObject.get("literal");
+
+                        ArrayList<String> srcImages =  new ArrayList<String>(Arrays.asList(imagenes.split(",")));
+                        place.setImagesPaths(srcImages);
+                    } else if (name.equalsIgnoreCase("titulo")) {
+                        place.setTitle((String) myObject.get("literal"));
+                    }else if(name.equalsIgnoreCase("lat")){
+                        JSONObject numberObject = (JSONObject) myObject.get("literal");
+                        place.setLatitud((String) numberObject.get("content").toString());
+                    }else if( name.equalsIgnoreCase("long")){
+                        JSONObject numberObject = (JSONObject) myObject.get("literal");
+                        place.setLongitud((String) numberObject.get("content").toString());
+                    }
+                }
+                places.add(place);
+            }
+            return ResponseEntity.ok().body(places);
+
+
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

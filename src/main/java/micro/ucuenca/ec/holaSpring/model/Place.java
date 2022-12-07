@@ -20,6 +20,15 @@ public class Place {
     private String label;
     private String fn;
     private ArrayList<String> imagesPaths;
+    private double distance ;
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
 
     public ArrayList<String> getImagesPaths() {
         return imagesPaths;
@@ -135,6 +144,7 @@ public class Place {
                 ", link='" + link + '\'' +
                 ", title='" + title + '\'' +
                 ", label='" + label + '\'' +
-                ", fn='" + fn + '\'' ;
+                ", fn='" + fn + '\'' +
+                ", id='" + placeId + "'}";
     }
 }

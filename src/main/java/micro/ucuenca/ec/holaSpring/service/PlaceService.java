@@ -106,7 +106,6 @@ public class PlaceService {
     public ResponseEntity<?> getPlaceFromDB(String placeId){
 
         String queryPlace=getPlaceQuery(placeId);
-        System.out.println(queryPlace);
         triplestoreConnection = new TriplestoreConnection();
         return triplestoreConnection.QueryTriplestore(queryPlace);
 

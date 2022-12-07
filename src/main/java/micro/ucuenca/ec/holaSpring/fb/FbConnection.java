@@ -23,7 +23,7 @@ public class FbConnection {
         HttpHeaders headers = new HttpHeaders();
         // ContentType
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        headers.set("Authorization", "Bearer EAAmqhoYHuBsBAIEgFsPJlG6KgheM9PwieLe2HgqOdQZAlSGZBQwgf3qJVhIwaoNtChbyx8TAL0mqpFNZCJq1bj1cImkKlom8r0dTrTGlvsJFBEJEptmUieQowBxLRKOe16Yj8vRlnbIIwfRonZAYjzZBGGczNoIWF3jLGv46kuBR21t4spw94");
+        headers.set("Authorization", "Bearer EAAmqhoYHuBsBAMifA6cxIiP5a9jAZBd76MQXhwacJjHivbd044vnL0V5Gh3dDXHmm1FOBrlOAf7gOUvCR75vAZBxvXZAwUZCBeTjWqrZCnQf2iZAiOydzMAZBb2LWuTCCk8v4UI3yOrV4dilfoLubrZAoTNHasWuXTVmwXZBk3H5o3NtSJPpcChVt");
         MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
         // Load a file from disk.
         Resource file1 = new FileSystemResource(file);
