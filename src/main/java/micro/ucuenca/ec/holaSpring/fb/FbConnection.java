@@ -18,12 +18,14 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class FbConnection {
+
+    private static String tk="Bearer ";
     public static String SendData(String file) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         // ContentType
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        headers.set("Authorization", "Bearer EAAmqhoYHuBsBAMifA6cxIiP5a9jAZBd76MQXhwacJjHivbd044vnL0V5Gh3dDXHmm1FOBrlOAf7gOUvCR75vAZBxvXZAwUZCBeTjWqrZCnQf2iZAiOydzMAZBb2LWuTCCk8v4UI3yOrV4dilfoLubrZAoTNHasWuXTVmwXZBk3H5o3NtSJPpcChVt");
+        headers.set("Authorization", tk);
         MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
         // Load a file from disk.
         Resource file1 = new FileSystemResource(file);
@@ -37,7 +39,7 @@ public class FbConnection {
 
         if (responseEntity.getStatusCodeValue() == 200) {
             HttpHeaders headerqs = new HttpHeaders();
-            headerqs.add("Authorization", "Bearer EAAmqhoYHuBsBAIEgFsPJlG6KgheM9PwieLe2HgqOdQZAlSGZBQwgf3qJVhIwaoNtChbyx8TAL0mqpFNZCJq1bj1cImkKlom8r0dTrTGlvsJFBEJEptmUieQowBxLRKOe16Yj8vRlnbIIwfRonZAYjzZBGGczNoIWF3jLGv46kuBR21t4spw94");
+            headerqs.add("Authorization", tk);
             HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity(headerqs);
 
             ResponseEntity<String> response = null;
