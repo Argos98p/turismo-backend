@@ -48,6 +48,7 @@ public class PlaceController {
         return convFile;
     }
     //@PostMapping("/add" )
+    // @CrossOrigin
     @RequestMapping(path = "/add", method = POST, consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<?> newPlace(@RequestParam("model") String jsonObject, @RequestParam("files")MultipartFile[] files)  {
 
@@ -59,17 +60,17 @@ public class PlaceController {
             throw new RuntimeException(e);
         }
 
-        if(place.getUserId()==null){
+        if(place.getUserId()==null || place.getUserId().isEmpty() || place.getUserId().isBlank()){
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: ID user is not present"));
         }
-        if(place.getTitle()==null){
+        if(place.getTitle()==null || place.getTitle().isEmpty() || place.getTitle().isBlank()){
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Name of resource is empty"));
         }
-        if(place.getLongitud()==null || place.getLatitud()==null) {
+        if(place.getLongitud()==null || place.getLatitud()==null || place.getLongitud().isEmpty() || place.getLatitud().isEmpty() || place.getLongitud().isBlank() || place.getLatitud().isBlank()) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Coordinates of resource are empty"));
@@ -95,7 +96,7 @@ public class PlaceController {
         return ResponseEntity.ok(new MessageResponse("Place registered successfully!"));
 
     }
-
+    @CrossOrigin
     @GetMapping("/get")
     public ResponseEntity<?> getPlace (@RequestParam("placeId") String placeId){
 
@@ -147,7 +148,7 @@ public class PlaceController {
 
 
     }
-
+    @CrossOrigin
     @GetMapping("/all")
     public ResponseEntity<?> getAllPlaces(){
 
@@ -162,8 +163,8 @@ public class PlaceController {
             JSONObject results= (JSONObject) sparqlObject.get("results");
             JSONArray otherResult = (JSONArray) results.get("result");
             for (int j = 0;j<otherResult.size();j++){
-               JSONObject aux= (JSONObject) otherResult.get(j);
-               JSONArray resultadosArray = (JSONArray) aux.get("binding");
+                JSONObject aux= (JSONObject) otherResult.get(j);
+                JSONArray resultadosArray = (JSONArray) aux.get("binding");
                 Place place = new Place();
                 for(int i = 0;i<resultadosArray.size();i++){
                     JSONObject myObject = (JSONObject) resultadosArray.get(i);
@@ -201,6 +202,7 @@ public class PlaceController {
 
     }
 
+    @CrossOrigin
     @GetMapping("nearPlaces")
     public ResponseEntity<?> nearPlaces(@RequestParam("placeId") String placeId, @RequestParam("km") String km){
 
@@ -266,3 +268,4 @@ public class PlaceController {
         }
     }
 }
+
