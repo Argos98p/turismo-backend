@@ -25,7 +25,7 @@ import java.util.Objects;
 
 public class FbConnection {
 
-    private static String tk="Bearer ";
+    private static String tk="Bearer f";
     public static String SendData(String file) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
