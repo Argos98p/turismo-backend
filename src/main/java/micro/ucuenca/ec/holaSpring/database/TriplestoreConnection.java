@@ -27,7 +27,7 @@ public class TriplestoreConnection {
     public ResponseEntity<?> PostToTriplestore(String query){
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
         Map<String, String> map = new HashMap<>();
-        map.put("Content-Type", "application/sparql-update");
+        map.put("Content-Type", "application/sparql-update; charset=UTF-8");
         map.put("Authorization", getBasicAuthenticationHeader());
         headers.setAll(map);
         HttpEntity<?> request = new HttpEntity<>(query, headers);
@@ -41,7 +41,7 @@ public class TriplestoreConnection {
 
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
         Map<String, String> map = new HashMap<>();
-        map.put("Content-Type", "application/sparql-query");
+        map.put("Content-Type", "application/sparql-query; charset=UTF-8");
         //map.put("Accept","application/sparql-results+json");
         map.put("Authorization", getBasicAuthenticationHeader());
         headers.setAll(map);

@@ -1,6 +1,7 @@
 package micro.ucuenca.ec.holaSpring.service;
 
 import micro.ucuenca.ec.holaSpring.Utils.SparlQueryInsert;
+import micro.ucuenca.ec.holaSpring.Utils.SparqlTemplates;
 import micro.ucuenca.ec.holaSpring.database.TriplestoreConnection;
 import micro.ucuenca.ec.holaSpring.model.MemberRequest;
 import micro.ucuenca.ec.holaSpring.model.Organization;
@@ -63,9 +64,25 @@ public class OrganizationService {
         insertSparql.setBaseUri("http://turis-ucuenca/");
         insertSparql.setBase("http://turis-ucuenca/");
         insertSparql.setPrefix("myorg","http://turis-ucuenca/org/");
-        insertSparql.setPrefix("myregiones","http://turis-ucuenca/regiones/");
+        insertSparql.setPrefix("myregiones","http://turis-ucuenca/region/");
         insertSparql.setTriple("myregiones:"+organizationRegionRequest.getRegionId(),":isAdminBy","myorg:"+organizationRegionRequest.getOrganizationId());
         insertSparql.setTriple("myorg:"+organizationRegionRequest.getOrganizationId(),":admin","myregiones:"+organizationRegionRequest.getRegionId());
         return insertSparql.build();
+    }
+
+    /*
+    public ResponseEntity<?> queryInfoOrganizacion(String organizacionId) {
+
+        String query = SparqlTemplates.getOrgInfo(organizacionId);
+        triplestoreConnection =new TriplestoreConnection();
+        return triplestoreConnection.QueryTriplestore(query);*
+        return n;
+    }*/
+
+    public ResponseEntity<?> queryGetAllOrgByUser(String userId) {
+        String query = SparqlTemplates.orgByUserId(userId);
+
+        triplestoreConnection =new TriplestoreConnection();
+        return triplestoreConnection.QueryTriplestore(query);
     }
 }

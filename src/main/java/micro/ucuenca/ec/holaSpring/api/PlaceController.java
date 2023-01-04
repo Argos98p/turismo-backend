@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -51,8 +52,6 @@ public class PlaceController {
     // @CrossOrigin
     @RequestMapping(path = "/add", method = POST, consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<?> newPlace(@RequestParam("model") String jsonObject, @RequestParam("files")MultipartFile[] files)  {
-
-
         Place place;
         try {
             place = objectMapper.readValue(jsonObject, Place.class);
@@ -80,13 +79,11 @@ public class PlaceController {
         for(int i = 0;i<files.length;i++){
             imagesPaths.add(fileStorageService.storeFile(files[i],"" ));
         }
+        ArrayList<ArrayList<String>> srcAndIds = FbConnection.ToFacebook(imagesPaths);
 
-        ArrayList<String> imagesOfResource = FbConnection.ToFacebook(imagesPaths);
-        place.setImagesPaths(imagesOfResource);
-
+        place.setImagesPaths(srcAndIds.get(0));
+        place.setFbIds(srcAndIds.get(1));
         String query = placeService.toSparqlInsert(place);
-
-
         ResponseEntity<?> response = placeService.saveInTripleStore(place, query);
 
         if(response.getStatusCodeValue() == 200){
@@ -101,108 +98,66 @@ public class PlaceController {
     public ResponseEntity<?> getPlace (@RequestParam("placeId") String placeId){
 
         String resultadoJson = (String) placeService.getPlaceFromDB(placeId).getBody();
-        Place place = new Place();
-        place.setPlaceId(placeId);
-
-        JSONParser parser = new JSONParser();
-        JSONObject result = null;
-
-        try {
-            result = (JSONObject) parser.parse(resultadoJson);
-            JSONObject sparqlObject= (JSONObject) result.get("sparql");
-            JSONObject results= (JSONObject) sparqlObject.get("results");
-            JSONObject otherResult = (JSONObject) results.get("result");
-            JSONArray resultadosArray = (JSONArray) otherResult.get("binding");
-
-            for(int i = 0;i<resultadosArray.size();i++){
-
-                JSONObject myObject = (JSONObject) resultadosArray.get(i);
-
-                String name = (String) myObject.get("name");
-
-                if(name.equalsIgnoreCase("creadoPor")){
-                    place.setUserId((String) myObject.get("literal"));
-                }else if (name.equalsIgnoreCase("descripcion")){
-                    place.setDescripcion((String) myObject.get("literal"));
-                } else if (name.equalsIgnoreCase("imagenes")) {
-                    String imagenes= (String) myObject.get("literal");
-                    ArrayList<String> srcImages =  new ArrayList<String>(Arrays.asList(imagenes.split(",")));
-                    place.setImagesPaths(srcImages);
-                } else if (name.equalsIgnoreCase("titulo")) {
-                    place.setTitle((String) myObject.get("literal"));
-                }else if(name.equalsIgnoreCase("lat")){
-                    JSONObject numberObject = (JSONObject) myObject.get("literal");
-                    place.setLatitud((String) numberObject.get("content").toString());
-                }else if( name.equalsIgnoreCase("long")){
-                    JSONObject numberObject = (JSONObject) myObject.get("literal");
-                    place.setLongitud((String) numberObject.get("content").toString());
-                }
-            }
-
-
-            return ResponseEntity.ok().body(place);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-
-
+        return ResponseEntity.ok().body(Place.responseOnePlaceParser(resultadoJson,placeId));
 
     }
     @CrossOrigin
     @GetMapping("/all")
     public ResponseEntity<?> getAllPlaces(){
-
         String resultadoString = (String) placeService.getAllPOIs().getBody();
-        JSONParser parser = new JSONParser();
-        JSONObject result = null;
-        ArrayList<Place> places=new ArrayList<>();
-
-        try {
-            result = (JSONObject) parser.parse(resultadoString);
-            JSONObject sparqlObject= (JSONObject) result.get("sparql");
-            JSONObject results= (JSONObject) sparqlObject.get("results");
-            JSONArray otherResult = (JSONArray) results.get("result");
-            for (int j = 0;j<otherResult.size();j++){
-                JSONObject aux= (JSONObject) otherResult.get(j);
-                JSONArray resultadosArray = (JSONArray) aux.get("binding");
-                Place place = new Place();
-                for(int i = 0;i<resultadosArray.size();i++){
-                    JSONObject myObject = (JSONObject) resultadosArray.get(i);
-                    String name = (String) myObject.get("name");
-                    if(name.equalsIgnoreCase("creadoPor")){
-                        place.setUserId((String) myObject.get("literal"));
-                    }else if(name.equalsIgnoreCase("url")){
-                        String uri=(String) myObject.get("uri");
-                        place.setPlaceId(uri.replace("http://turis-ucuenca/",""));
-                    }
-                    else if (name.equalsIgnoreCase("descripcion")){
-                        place.setDescripcion((String) myObject.get("literal"));
-                    } else if (name.equalsIgnoreCase("images")) {
-                        String imagenes= (String) myObject.get("literal");
-                        ArrayList<String> srcImages =  new ArrayList<String>(Arrays.asList(imagenes.split(",")));
-                        place.setImagesPaths(srcImages);
-                    } else if (name.equalsIgnoreCase("titulo")) {
-                        place.setTitle((String) myObject.get("literal"));
-                    }else if(name.equalsIgnoreCase("lat")){
-                        JSONObject numberObject = (JSONObject) myObject.get("literal");
-                        place.setLatitud((String) numberObject.get("content").toString());
-                    }else if( name.equalsIgnoreCase("long")){
-                        JSONObject numberObject = (JSONObject) myObject.get("literal");
-                        place.setLongitud((String) numberObject.get("content").toString());
-                    }
-                }
-                places.add(place);
-            }
-            return ResponseEntity.ok().body(places);
+        assert resultadoString != null;
+        return ResponseEntity.ok().body(Place.responseParserToPlace(resultadoString));
+    }
 
 
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+    @CrossOrigin
+    @GetMapping("/all/revisar")
+    public ResponseEntity<?> getAllPlacesRevisar() {
+
+        String resultadoString = (String) placeService.getPlacesRevisar("revisar").getBody();
+        assert resultadoString != null;
+        return ResponseEntity.ok().body(Place.responseParserToPlace(resultadoString));
 
     }
 
     @CrossOrigin
+    @GetMapping("/all/aceptados")
+    public ResponseEntity<?> getAllPlacesAceptados() {
+
+        String resultadoString = (String) placeService.getPlacesRevisar("aprobado").getBody();
+        assert resultadoString != null;
+        return ResponseEntity.ok().body(Place.responseParserToPlace(resultadoString));
+
+    }
+
+
+    @CrossOrigin
+    @GetMapping("/all/rechazados")
+    public ResponseEntity<?> getAllPlacesRechazados() {
+
+        String resultadoString = (String) placeService.getPlacesRevisar("rechazado").getBody();
+        assert resultadoString != null;
+        return ResponseEntity.ok().body(Place.responseParserToPlace(resultadoString));
+
+    }
+
+    @CrossOrigin
+    @PostMapping("rechazar")
+    public ResponseEntity<?> placeRechazar(@RequestParam("placeId") String placeId){
+        return placeService.rechazarLugar(placeId);
+
+    }
+
+    @CrossOrigin
+    @PostMapping("aceptar")
+    public ResponseEntity<?> acceptPlace(@RequestParam("placeId") String placeId){
+        return placeService.aceptarLugar(placeId);
+    }
+
+
+
+
+        @CrossOrigin
     @GetMapping("nearPlaces")
     public ResponseEntity<?> nearPlaces(@RequestParam("placeId") String placeId, @RequestParam("km") String km){
 
@@ -223,8 +178,6 @@ public class PlaceController {
 
             JSONArray otherResult = (JSONArray) results.get("result");
 
-
-
             for (int j = 0;j<otherResult.size();j++){
                 JSONObject aux= (JSONObject) otherResult.get(j);
                 JSONArray resultadosArray = (JSONArray) aux.get("binding");
@@ -233,7 +186,7 @@ public class PlaceController {
                     JSONObject myObject = (JSONObject) resultadosArray.get(i);
                     String name = (String) myObject.get("name");
                     if(name.equalsIgnoreCase("creadoPor")){
-                        place.setUserId((String) myObject.get("literal"));
+                        place.setUserId((String) myObject.get("literal").toString());
                     }else if(name.equalsIgnoreCase("url")){
                         String uri=(String) myObject.get("uri");
                         place.setPlaceId(uri.replace("http://turis-ucuenca/",""));
