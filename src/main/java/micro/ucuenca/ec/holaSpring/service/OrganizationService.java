@@ -9,6 +9,7 @@ import micro.ucuenca.ec.holaSpring.model.OrganizationRegionRequest;
 import micro.ucuenca.ec.holaSpring.model.Place;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.support.SimpleTriggerContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -82,6 +83,12 @@ public class OrganizationService {
     public ResponseEntity<?> queryGetAllOrgByUser(String userId) {
         String query = SparqlTemplates.orgByUserId(userId);
 
+        triplestoreConnection =new TriplestoreConnection();
+        return triplestoreConnection.QueryTriplestore(query);
+    }
+
+    public ResponseEntity<?> getRegInOrg(String orgId){
+        String query = SparqlTemplates.regionesByOrgId(orgId);
         triplestoreConnection =new TriplestoreConnection();
         return triplestoreConnection.QueryTriplestore(query);
     }

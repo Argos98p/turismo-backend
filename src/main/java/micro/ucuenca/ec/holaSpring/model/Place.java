@@ -326,7 +326,7 @@ public class Place {
                     } else if (name.equalsIgnoreCase("titulo")) {
                         place.setTitle((String) myObject.get("literal"));
                     }else if (name.equalsIgnoreCase("fbIDs")){
-                        String fb_ids_string = (String) myObject.get("literal");
+                        String fb_ids_string = (String) myObject.get("literal").toString();
                         ArrayList<String> fbIds= new ArrayList<String>(Arrays.asList(fb_ids_string.split(",")));
                         place.setFbIds(fbIds);
                         place.setImagesPaths( PlaceService.getImageUrls(fbIds));

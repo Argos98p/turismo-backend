@@ -25,7 +25,7 @@ import java.util.Objects;
 
 public class FbConnection {
 
-    private static String tk="Bearer f";
+    private static String tk="Bearer EAAmqhoYHuBsBAHwa3bhZCOmdPjpYFvk0c1PcP7C94FvJVtQCiEs7D9ZADV0cZBZA4W6TnQYZA32EnlJDaceaH6qPCFjZCYev9TYWecPWmI3HFP6zvU6HehKRpxBxqw9ZBAvr45qp0EIOvxJanrDyJ112V9IZAzLqE7W2juPy9V0CkaW2hpMkPNsA";
     public static String SendData(String file) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();

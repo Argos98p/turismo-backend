@@ -261,4 +261,30 @@ public class SparqlTemplates {
                 }GROUP BY ?org  ?orgName
                 """;
     }
+
+
+    public static  String regionesByOrgId(String orgId){
+        String aux = "\"http://turis-ucuenca/org/"+orgId+"\").";
+        return """
+                prefix : <http://turis-ucuenca/>
+                prefix org: <http://www.w3.org/TR/vocab-org/>
+                prefix myorg: <http://turis-ucuenca/org/>
+                prefix myregiones: <http://turis-ucuenca/region/>
+                prefix myusers: <http://turis-ucuenca/user/>
+                prefix foaf: <http://xmlns.com/foaf/0.1/>
+                prefix tp: <http://tour-pedia.org/download/tp.owl>
+                prefix  vcard: <http://www.w3.org/2006/vcard/ns#>
+                prefix dc: <http://purl.org/dc/elements/1.1/>
+                base  <http://turis-ucuenca/>
+                SELECT ?sector  ?nombre WHERE{
+                    ?a a org:Organization;
+                       :admin ?sector2.
+                    ?sector2 a :Region.
+                    ?sector2 dc:title ?nombre
+                    BIND(REPLACE(STR(?sector2), "http://turis-ucuenca/region/","") as ?sector).
+                    FILTER(str(?a) =
+                    """+aux+"""
+                }
+                """;
+    }
 }

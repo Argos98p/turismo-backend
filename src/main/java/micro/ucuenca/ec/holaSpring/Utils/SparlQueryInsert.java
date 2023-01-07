@@ -54,7 +54,7 @@ public class SparlQueryInsert {
         for (String coord:region.getCoordenadas()) {
             coordenadas.append(coord).append(", ");
         }*/
-        return "[ geo:asWKT \"POLYGON (("+region.getCoordenadas()+")\"^^geo:wktLiteral ;] ";
+        return "[ geo:asWKT \"POLYGON (("+region.getCoordenadas()+"))^^geo:wktLiteral ;] ";
 
     }
 
